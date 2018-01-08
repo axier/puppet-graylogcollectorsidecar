@@ -13,7 +13,8 @@ class graylogcollectorsidecar::dist::redhat (
   $log_rotation_time = undef,
   $log_max_age       = undef,
   $backends          = undef,
-  $version           = 'latest'
+  $version           = '0.1.4',
+  $mirror_url        = 'https://github.com/Graylog2/collector-sidecar/releases/download',
 ) {
 
   if ($::installed_sidecar_version == $version) {
@@ -21,32 +22,20 @@ class graylogcollectorsidecar::dist::redhat (
   } else {
     # Download package
 
-    # Versions have to be downloaded using tags, the latest release not (https://github.com/dodevops/puppet-graylogcollectorsidecar/issues/2)
-    if $version == 'latest' {
-      $is_tag = false
-    } else {
-      $is_tag = true
-    }
-
-    githubreleases::download {
-      'get_sidecar_package':
-        author            => 'Graylog2',
-        repository        => 'collector-sidecar',
-        release           => $version,
-        is_tag            => $is_tag,
-        asset             => true,
-        asset_filepattern => "${::architecture}\\.rpm",
-        target            => '/tmp/collector-sidecar.rpm',
+    archive { '/tmp/collector-sidecar.rpm':
+      ensure  => present,
+      source  => "${mirror_url}/${version}/collector-sidecar-${version}-1.${::architecture}.rpm",
+      creates => '/tmp/collector-sidecar.rpm',
+      cleanup => false,
     }
 
     # Install the package
 
-    package {
-      'graylog-sidecar':
-        ensure   => 'installed',
-        name     => 'collector-sidecar',
-        provider => 'rpm',
-        source   => '/tmp/collector-sidecar.rpm',
+    package { 'graylog-sidecar':
+      ensure   => 'installed',
+      name     => 'collector-sidecar',
+      provider => 'rpm',
+      source   => '/tmp/collector-sidecar.rpm',
     }
 
     # Create a sidecar service
@@ -62,14 +51,13 @@ class graylogcollectorsidecar::dist::redhat (
       }
     }
 
-    exec {
-      'install_sidecar_service':
-        creates => $check_creates,
-        command => 'graylog-collector-sidecar -service install',
-        path    => [ '/usr/bin', '/bin' ],
+    exec { 'install_sidecar_service':
+      creates => $check_creates,
+      command => 'graylog-collector-sidecar -service install',
+      path    => [ '/usr/bin', '/bin' ],
     }
 
-    Githubreleases::Download['get_sidecar_package']
+    Archive['/tmp/collector-sidecar.rpm']
     -> Package['graylog-sidecar']
     -> Exec['install_sidecar_service']
     -> Class['graylogcollectorsidecar::configure']
@@ -97,14 +85,14 @@ class graylogcollectorsidecar::dist::redhat (
         enabled            => false,
         binary_path        => '/usr/bin/nxlog',
         configuration_path =>
-        '/etc/graylog/collector-sidecar/generated/nxlog.conf',
+          '/etc/graylog/collector-sidecar/generated/nxlog.conf',
       },
       {
         name               => 'filebeat',
         enabled            => true,
         binary_path        => '/usr/bin/filebeat',
         configuration_path =>
-        '/etc/graylog/collector-sidecar/generated/filebeat.yml',
+          '/etc/graylog/collector-sidecar/generated/filebeat.yml',
       },
     ]
   )
