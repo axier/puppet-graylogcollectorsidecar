@@ -39,46 +39,65 @@ class graylogcollectorsidecar (
   $log_rotation_time = undef,
   $log_max_age       = undef,
   $backends          = undef,
-  $version           = 'latest'
+  $version           = '0.1.4',
+  $mirror_url        = 'https://github.com/Graylog2/collector-sidecar/releases/download',
 ) {
 
   $_node_id = pick($node_id, $::hostname)
 
   case $::osfamily {
     'Debian': {
-      class {
-        '::graylogcollectorsidecar::dist::debian':
-          version           => $version,
-          api_url           => $api_url,
-          tags              => $tags,
-          update_interval   => $update_interval,
-          tls_skip_verify   => $tls_skip_verify,
-          send_status       => $send_status,
-          list_log_files    => $list_log_files,
-          node_id           => $_node_id,
-          collector_id      => $collector_id,
-          log_path          => $log_path,
-          log_rotation_time => $log_rotation_time,
-          log_max_age       => $log_max_age,
-          backends          => $backends,
+      class { '::graylogcollectorsidecar::dist::debian':
+        version           => $version,
+        mirror_url        => $mirror_url,
+        api_url           => $api_url,
+        tags              => $tags,
+        update_interval   => $update_interval,
+        tls_skip_verify   => $tls_skip_verify,
+        send_status       => $send_status,
+        list_log_files    => $list_log_files,
+        node_id           => $_node_id,
+        collector_id      => $collector_id,
+        log_path          => $log_path,
+        log_rotation_time => $log_rotation_time,
+        log_max_age       => $log_max_age,
+        backends          => $backends,
       }
     }
     'RedHat': {
-      class {
-        '::graylogcollectorsidecar::dist::redhat':
-          version           => $version,
-          api_url           => $api_url,
-          tags              => $tags,
-          update_interval   => $update_interval,
-          tls_skip_verify   => $tls_skip_verify,
-          send_status       => $send_status,
-          list_log_files    => $list_log_files,
-          node_id           => $_node_id,
-          collector_id      => $collector_id,
-          log_path          => $log_path,
-          log_rotation_time => $log_rotation_time,
-          log_max_age       => $log_max_age,
-          backends          => $backends,
+      class { '::graylogcollectorsidecar::dist::redhat':
+        version           => $version,
+        mirror_url        => $mirror_url,
+        api_url           => $api_url,
+        tags              => $tags,
+        update_interval   => $update_interval,
+        tls_skip_verify   => $tls_skip_verify,
+        send_status       => $send_status,
+        list_log_files    => $list_log_files,
+        node_id           => $_node_id,
+        collector_id      => $collector_id,
+        log_path          => $log_path,
+        log_rotation_time => $log_rotation_time,
+        log_max_age       => $log_max_age,
+        backends          => $backends,
+      }
+    }
+    'Windows': {
+      class { '::graylogcollectorsidecar::dist::windows':
+        version           => $version,
+        mirror_url        => $mirror_url,
+        api_url           => $api_url,
+        tags              => $tags,
+        update_interval   => $update_interval,
+        tls_skip_verify   => $tls_skip_verify,
+        send_status       => $send_status,
+        list_log_files    => $list_log_files,
+        node_id           => $_node_id,
+        collector_id      => $collector_id,
+        log_path          => $log_path,
+        log_rotation_time => $log_rotation_time,
+        log_max_age       => $log_max_age,
+        backends          => $backends,
       }
     }
     default: {
